@@ -17,6 +17,11 @@ pub enum AsteroidSize {
     Medium,
     Small,
 }
+impl std::fmt::Display for AsteroidSize {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
 impl AsteroidSize {
     // Score marked when destroying an asteroid of this size
     pub fn score(&self) -> u32 {
@@ -27,7 +32,7 @@ impl AsteroidSize {
         }
     }
 
-    // Defines for each if the asteroid is splitted on destruction
+    // Defines for each if the asteroid is split on destruction
     // And the spawned sub-asteroid size and radius of spawning.
     pub fn split(&self) -> Option<(AsteroidSize, f32)> {
         match self {
@@ -66,17 +71,12 @@ fn spawn_asteroid_event(
         };
         commands
             .spawn((
-                SpriteBundle {
-                    // No custom size, the sprite png, are already at our game size.
-                    // Transform Z is meaningfull for sprite stacking.
-                    // Transform X and Y will be computed from avian2d Position component
-                    transform: Transform {
-                        translation: Vec3::Z * 1.0,
-                        ..default()
-                    },
-                    texture: sprite_handle.clone(),
+                Name::new(format!("Asteroid {}", event.size)),
+                Sprite {
+                    image: sprite_handle.clone(),
                     ..default()
                 },
+                Transform::from_translation(Vec3::new(event.x, event.y, 1.0)),
                 Asteroid { size: event.size },
                 Damage,
                 StateScoped(AppState::Game),
@@ -87,7 +87,6 @@ fn spawn_asteroid_event(
                 RigidBody::Dynamic,
                 Collider::circle(radius),
                 Restitution::new(0.5),
-                Position(Vec2::new(event.x, event.y)),
                 LinearVelocity(Vec2::new(event.vx, event.vy)),
                 AngularVelocity(event.angvel),
             ))

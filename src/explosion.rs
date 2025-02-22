@@ -12,6 +12,9 @@ pub struct SpawnExplosionEvent {
     pub y: f32,
 }
 
+/// Main component for an Explosion FX entity.
+/// The FX is a simple animation of the scaling of the associated sprite
+/// from a `start_scale` to an `end_scale` through the lifetime of a `timer`.
 #[derive(Component)]
 pub struct Explosion {
     timer: Timer,
@@ -23,8 +26,10 @@ pub struct ExplosionPlugin;
 
 impl Plugin for ExplosionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SpawnExplosionEvent>()
-            .add_systems(Update, (animate_explosion, catch_explosion_event));
+        app.add_event::<SpawnExplosionEvent>().add_systems(
+            Update,
+            (animate_explosion, catch_explosion_event).run_if(in_state(GameState::Running)),
+        );
     }
 }
 
@@ -59,49 +64,49 @@ fn catch_explosion_event(
             ),
         };
         commands.spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(start_size),
-                    ..default()
-                },
-                transform: Transform {
-                    translation: Vec3::new(event.x, event.y, 3.0),
-                    ..default()
-                },
-                texture,
+            Sprite {
+                image: texture,
+                custom_size: Some(start_size),
                 ..default()
             },
+            Transform::from_translation(Vec3::new(event.x, event.y, 3.0)),
             Explosion {
                 timer: Timer::from_seconds(duration, TimerMode::Once),
                 start_scale: 1.,
                 end_scale,
             },
             StateScoped(AppState::Game),
-            AudioBundle {
-                source: sound,
-                ..default()
-            },
+            AudioPlayer(sound),
         ));
     }
 }
 
+/// System that handles animation of the explosions.
+///
+/// For each explosion, tick its timer and either update the scaling or,
+/// when finished, despawn the whole entity.
 fn animate_explosion(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Transform, &mut Explosion)>,
+    game_state: Res<State<GameState>>,
 ) {
-    let elapsed = time.delta();
-    for (entity, mut transform, mut explosion) in query.iter_mut() {
-        explosion.timer.tick(elapsed);
-        if explosion.timer.finished() {
-            commands.entity(entity).despawn();
-        } else {
-            transform.scale = Vec3::splat(
-                explosion.start_scale
-                    + (explosion.end_scale - explosion.start_scale)
-                        * (explosion.timer.elapsed_secs()
-                            / explosion.timer.duration().as_secs_f32()),
-            );
+    // We want the explosions to be 'stalled' in the paused state.
+    // So we don't tick any of the timers.
+    if game_state.get() != &GameState::Paused {
+        let elapsed = time.delta();
+        for (entity, mut transform, mut explosion) in query.iter_mut() {
+            explosion.timer.tick(elapsed);
+            if explosion.timer.finished() {
+                commands.entity(entity).despawn();
+            } else {
+                transform.scale = Vec3::splat(
+                    explosion.start_scale
+                        + (explosion.end_scale - explosion.start_scale)
+                            * (explosion.timer.elapsed_secs()
+                                / explosion.timer.duration().as_secs_f32()),
+                );
+            }
         }
     }
 }

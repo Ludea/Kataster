@@ -30,32 +30,25 @@ fn spawn_laser(
     audios: Res<AudioAssets>,
 ) {
     for spawn_event in laser_spawn_events.read() {
-        let transform = spawn_event.transform;
-        let position = Position(spawn_event.transform.translation.truncate());
-        let rotation: Rotation = transform.rotation.into();
+        let mut transform = spawn_event.transform;
+        // Enforce laser sprite layer
+        transform.translation.z = 2.0;
         let linvel = LinearVelocity(
             (spawn_event.linvel.0 * Vec2::Y) + (transform.rotation * Vec3::Y * 500.0).truncate(),
         );
         let collider = Collider::rectangle(2.5, 10.0);
         // It seems the way laser are spawned, xpbd does not create a ColliderMassProperties.
-        // So I add it explicitely to avoid a runtime warning.
+        // So I add it explicitly to avoid a runtime warning.
         // I did not search why the laser spawning is special.
-        let mass_properties = MassPropertiesBundle::new_computed(&collider, 1.0);
+        let mass_properties = MassPropertiesBundle::from_shape(&collider, 1.0);
         commands.spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(5., 20.0)),
-                    ..default()
-                },
-                // Transform Z is meaningfull for sprite stacking.
-                // Transform X,Y and rotation will be computed from xpbd Position and Rotation components
-                transform: Transform {
-                    translation: Vec3::Z * 2.0,
-                    ..default()
-                },
-                texture: handles.laser.clone(),
+            Name::new("Laser"),
+            Sprite {
+                image: handles.laser.clone(),
+                custom_size: Some(Vec2::new(5., 20.0)),
                 ..default()
             },
+            transform,
             Laser {
                 despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
             },
@@ -63,14 +56,9 @@ fn spawn_laser(
             RigidBody::Dynamic,
             collider,
             mass_properties,
-            position,
-            rotation,
             linvel,
             Sensor,
-            AudioBundle {
-                source: audios.laser_trigger.clone(),
-                ..default()
-            },
+            AudioPlayer(audios.laser_trigger.clone()),
             StateScoped(AppState::Game),
         ));
     }
