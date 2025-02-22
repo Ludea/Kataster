@@ -14,4 +14,4 @@ bevy = { version = "0.15.0", features = ["bevy_remote"] }
 leafwing-input-manager = "0.16"
 rand = "0.8"
 bevy_hanabi = "0.14"
-avian2d = { version = "0.2" , features = [ "debug-plugin" ] } 
+avian2d = "0.2"
