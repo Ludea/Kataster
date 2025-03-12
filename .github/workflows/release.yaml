@@ -16,15 +16,19 @@ jobs:
           - os: ubuntu-latest
             rust_target: x86_64-unknown-linux-gnu
             target: linux_x86_64
+            host: linux
           - os: macos-latest
             rust_target: x86_64-apple-darwin
             target: macos_x86_64
+            host: macos_x86_64
           - os: macos-latest
             rust_target: aarch64-apple-darwin
             target: macos_aarch64
+            host: macos_arm64 
           - os: windows-latest
             rust_target: x86_64-pc-windows-msvc
             target: windows_x86_64
+            host: win64
  
     runs-on: ${{ matrix.platform.os }} 
     steps:
@@ -67,7 +71,7 @@ jobs:
           cd output
           zip -r ../kataster_${{ matrix.platform.target }}.zip ./*
       - name: Upload to Speedupdateserver
-        run: curl -X POST -F "file=@kataster_${{ matrix.platform.target }}.zip" ${{ secrets.SPEEDUPDATE_URL}}/kataster/binaries 
+        run: curl -X POST -F "file=@kataster_${{ matrix.platform.target }}.zip" ${{ secrets.SPEEDUPDATE_URL }}/kataster/binaries/${{ matrix.platform.host }}
       - name: Upload file
         uses: softprops/action-gh-release@v2
         with:
