@@ -71,7 +71,7 @@ jobs:
           cd output
           zip -r ../kataster_${{ matrix.platform.target }}.zip ./*
       - name: Upload to Speedupdateserver
-        run: curl -X POST -F "file=@kataster_${{ matrix.platform.target }}.zip" ${{ secrets.SPEEDUPDATE_URL }}/kataster/binaries/${{ matrix.platform.host }}
+        run: curl -X POST -F "file=@kataster_${{ matrix.platform.target }}.zip" ${{ secrets.SPEEDUPDATE_URL }}/kataster/game/binaries/${{ matrix.platform.host }}
       - name: Upload file
         uses: softprops/action-gh-release@v2
         with:
