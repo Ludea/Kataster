@@ -50,7 +50,7 @@ fn main() {
     // Add some plugins to help debugging only when compiled in debug mode
     #[cfg(debug_assertions)]
     // Enable Avian2d debug renders
-    app.add_plugins(PhysicsDebugPlugin::default())
+    app.add_plugins(PhysicsDebugPlugin)
         // Enable connection to external tools, like vscode inspector
         .add_plugins(RemotePlugin::default())
         .add_plugins(RemoteHttpPlugin::default());

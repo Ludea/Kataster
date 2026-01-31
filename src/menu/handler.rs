@@ -55,7 +55,7 @@ impl MenuHandler {
                 )
             })
             .collect::<Vec<_>>();
-        let entity = commands
+        commands
             .spawn((
                 Node {
                     width: Val::Percent(100.0),
@@ -99,8 +99,7 @@ impl MenuHandler {
                 ],
             ))
             .insert(self)
-            .id();
-        entity
+            .id()
     }
 }
 pub fn menu_blink_system(time: Res<Time>, mut query: Query<(&mut DrawBlink, &mut Visibility)>) {
