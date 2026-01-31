@@ -35,11 +35,11 @@ jobs:
         with:
           components: rustfmt, clippy
           target: ${{ matrix.platform.rust_target }}
-      - name: Install alsa and udev
+      - name: Install Linux dependencies
         if: matrix.platform.os == 'ubuntu-latest'
         run: |
           sudo apt update
-          sudo apt install --no-install-recommends libasound2-dev libudev-dev      
+          sudo apt install -y --no-install-recommends libasound2-dev libudev-dev libwayland-dev
       - name: fmt
         run: cargo fmt --all -- --check
       - name: Clippy
