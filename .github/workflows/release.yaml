@@ -64,15 +64,15 @@ jobs:
         run: mv target/release/kataster.exe output/kataster.exe
       - name: zip folder on Windows 
         if: matrix.platform.os == 'windows-latest'
-        run:  Compress-Archive -Path (Get-ChildItem -Path output) -DestinationPath kataster_${{ matrix.platform.target }}.zip
+        run:  Compress-Archive -Path (Get-ChildItem -Path output) -DestinationPath kataster-${{ github.ref_name }}_${{ matrix.platform.target }}.zip
       - name: zip folder on Linux and MacOs
         if: matrix.platform.os != 'windows-latest'
         run: |
           cd output
-          zip -r ../kataster_${{ matrix.platform.target }}.zip ./*
+          zip -r ../kataster-${{ github.ref_name }}_${{ matrix.platform.target }}.zip ./*
       - name: Upload to Speedupdateserver
-        run: curl -X POST -F "file=@kataster_${{ matrix.platform.target }}.zip" ${{ secrets.SPEEDUPDATE_URL }}/sparus/game/binaries/${{ matrix.platform.host }}
+        run: curl -X POST -F "file=@kataster-${{ github.ref_name }}_${{ matrix.platform.target }}.zip" ${{ secrets.SPEEDUPDATE_URL }}/sparus/game/binaries/${{ matrix.platform.host }}
       - name: Upload file
         uses: softprops/action-gh-release@v2
         with:
-          files: kataster_${{ matrix.platform.target }}.zip
+          files: kataster-${{ github.ref_name }}_${{ matrix.platform.target }}.zip
