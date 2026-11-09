@@ -73,6 +73,6 @@ jobs:
       - name: Upload to Speedupdateserver
         run: curl -X POST -F "file=@kataster-${{ github.ref_name }}_${{ matrix.platform.target }}.zip" ${{ secrets.SPEEDUPDATE_URL }}/sparus/game/binaries/${{ matrix.platform.host }}
       - name: Upload file
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: kataster-${{ github.ref_name }}_${{ matrix.platform.target }}.zip
